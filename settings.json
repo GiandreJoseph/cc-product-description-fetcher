@@ -1,0 +1,14 @@
+{
+    "theme": "light",
+    "primary_color": "#1f5c9f",
+    "primary_hover": "#007bff",
+    "accent_color": "#233a53",
+    "background_color": "#f5f7f9",
+    "panel_color": "#ffffff",
+    "text_color": "#202833",
+    "muted_text_color": "#667085",
+    "border_color": "#748aa4",
+    "logo_width": 500,
+    "border_radius": 12,
+    "button_radius": 12
+}

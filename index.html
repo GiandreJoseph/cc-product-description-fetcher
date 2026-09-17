@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C&C Product Description Fetcher</title>
+    <link rel="stylesheet" href="/static/style.css">
+
+    <style>
+        /* Part number controls */
+        .part-number-input-wrap {
+            display: flex;
+            align-items: stretch;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .part-number-input-wrap #parts {
+            flex: 1;
+            min-width: 0;
+            margin: 0;
+        }
+
+        .clear-parts-button {
+            align-self: flex-start;
+            flex: 0 0 auto;
+            margin-top: 0;
+            min-height: 44px;
+            padding: 0 16px;
+            border: 1px solid #d7dce2;
+            border-radius: 8px;
+            background: #f5f7f9;
+            color: #39424e;
+            font-family: inherit;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1;
+            cursor: pointer;
+            transition:
+                background-color 0.18s ease,
+                border-color 0.18s ease,
+                color 0.18s ease,
+                box-shadow 0.18s ease,
+                transform 0.08s ease;
+        }
+
+        .clear-parts-button:hover {
+            background: #e9edf1;
+            border-color: #c5cbd3;
+            color: #1f2933;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+        }
+
+        .clear-parts-button:active {
+            transform: translateY(1px);
+            box-shadow: none;
+        }
+
+        .clear-parts-button:focus-visible {
+            outline: 3px solid rgba(31, 92, 160, 0.22);
+            outline-offset: 2px;
+        }
+
+        @media (max-width: 640px) {
+            .part-number-input-wrap {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .clear-parts-button {
+                align-self: flex-end;
+            }
+        }
+    </style>
+
+
+    <style>
+        /* Settings navigation button */
+        .nav-bar .nav-link[href="/settings"] {
+            border-radius: 8px;
+            transition:
+                background-color 0.18s ease,
+                color 0.18s ease,
+                box-shadow 0.18s ease;
+        }
+
+        .nav-bar .nav-link[href="/settings"]:hover {
+            background-color: rgba(31, 92, 159, 0.10);
+            color: #1F5C9F;
+        }
+
+        .nav-bar .nav-link[href="/settings"].active {
+            background-color: rgba(31, 92, 159, 0.12);
+            color: #1F5C9F;
+        }
+    </style>
+
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-top">
+        <div class="header-brand">
+            <img class="company-logo" src="/static/static_cc_logo.png" alt="Controls & Components">
+            <div class="header-divider"></div>
+            <div class="tagline">FLUID POWER. MOTION CONTROL. INDUSTRIAL SOLUTIONS.</div>
+        </div>
+
+        <div class="header-tool">
+            <div class="tool-title">PRODUCT DESCRIPTION FETCHER</div>
+            <div class="tool-subtitle">INTERNAL TOOL</div>
+        </div>
+    </div>
+
+    <nav class="nav-bar">
+        <div class="nav-links">
+            <a class="nav-link active" href="#">
+                <span class="nav-icon">⌂</span>
+                Home
+            </a>
+            <a class="nav-link" href="#">
+                <span class="nav-icon">▤</span>
+                Fetch Descriptions
+            </a>
+            <a class="nav-link" href="/settings">
+                <span class="nav-icon">⚙</span>
+                Settings
+            </a>
+            <a class="nav-link" href="#">
+                <span class="nav-icon">?</span>
+                Help
+            </a>
+        </div>
+
+        <div class="connection">
+            <span class="connection-dot"></span>
+            Connected to ControlsAndComponents.com
+        </div>
+    </nav>
+</header>
+
+<main class="dashboard">
+    <section class="page-heading">
+        <div>
+            <h1>Product Description Fetcher</h1>
+            <p>Upload your Excel file and enter part numbers to automatically fetch product descriptions from ControlsAndComponents.com.</p>
+        </div>
+
+        <div class="info-callout">
+            <div class="callout-icon">⚙</div>
+            <div>
+                <strong>Save Time. Keep Data Accurate.</strong>
+                <span>Automate your product description updates.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="dashboard-grid">
+        <div class="panel input-panel">
+            <div class="panel-heading">
+                <div class="heading-icon">▤</div>
+                <div class="heading-copy">
+                    <h2>Input &amp; File Upload</h2>
+                    <p>Enter up to 500 part numbers (one per line) and upload your Excel file.</p>
+                </div>
+                <span class="limit-badge">Max 500 SKUs</span>
+            </div>
+
+            <div class="field-label-row">
+                <label for="parts">Part Numbers</label>
+                <span id="counter">0 part numbers</span>
+            </div>
+
+            <div class="part-number-input-wrap">
+                <textarea id="parts" placeholder="Enter part numbers (one per line)...
+
+Example:
+  ASQF-6F
+  B-12
+  MV-100
+  3V210-08" oninput="countParts()"></textarea>
+
+                <button class="clear-parts-button" type="button" onclick="clearPartNumbers()">
+                    ×&nbsp; Clear
+                </button>
+            </div>
+
+            <div class="field-label">Excel File</div>
+
+            <label class="upload-zone" for="excel" id="upload-zone">
+                <div class="excel-icon">X</div>
+                <strong>Click to upload or drag and drop</strong>
+                <span id="file-name">Upload your Excel file (.xlsx or .xls)</span>
+            </label>
+
+            <input type="file" id="excel" accept=".xlsx,.xls" onchange="showFile()">
+
+            <button class="fetch-button" onclick="fetchDescriptions()">
+                <span class="play-icon">▶</span>
+                <span>Fetch Descriptions</span>
+            </button>
+        </div>
+
+        <div class="right-column">
+            <div class="panel progress-panel" id="progress-panel">
+                <div class="section-title">
+                    <div class="heading-icon">▥</div>
+                    <h2 id="progress-title">Ready to process</h2>
+                </div>
+
+                <div class="progress-row">
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                    <strong id="progress-percent">0%</strong>
+                </div>
+
+                <div class="progress-details">
+                    <span><strong id="progress-count">0 / 0</strong> processed</span>
+                    <span id="progress-status">Ready to start...</span>
+                </div>
+            </div>
+
+            <div class="panel summary-panel">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="heading-icon">▥</div>
+                        <h2>Results Summary</h2>
+                    </div>
+                    <button class="reset-button" type="button" onclick="window.location.reload()">Reset</button>
+                </div>
+
+                <div class="summary-grid">
+                    <div class="summary-card">
+                        <div class="summary-symbol updated">✓</div>
+                        <div>
+                            <span>Updated</span>
+                            <strong id="updated">0</strong>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-symbol notfound">×</div>
+                        <div>
+                            <span>Not Found</span>
+                            <strong id="notfound">0</strong>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-symbol review">!</div>
+                        <div>
+                            <span>Needs Review</span>
+                            <strong id="review">0</strong>
+                        </div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="summary-symbol total">▤</div>
+                        <div>
+                            <span>Total</span>
+                            <strong id="total">0</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel results-panel">
+                <div class="section-header">
+                    <div class="section-title">
+                        <div class="heading-icon">▦</div>
+                        <h2>Results</h2>
+                    </div>
+                    <button class="download" onclick="downloadExcel()">↓ &nbsp; Download Excel</button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Part Number</th>
+                                <th>Description</th>
+                                <th>Status</th>
+                                <th>Website Link</th>
+                            </tr>
+                        </thead>
+                        <tbody id="results">
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty">
+                                        <div class="empty-icon">□</div>
+                                        <strong>No results yet</strong>
+                                        <span>Upload a file and click “Fetch Descriptions” to begin.</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="site-footer">
+    <span>© 2024 Controls &amp; Components. All rights reserved.</span>
+    <span>Fluid Power &nbsp; | &nbsp; Motion Control &nbsp; | &nbsp; Industrial Components &nbsp; | &nbsp; Since 2006</span>
+</footer>
+
+<script>
+
+async function fetchDescriptions() {
+    const partsText = document.getElementById("parts").value;
+    const file = document.getElementById("excel").files[0];
+
+    const parts = partsText
+        .split("\n")
+        .map(part => part.trim())
+        .filter(part => part.length > 0);
+
+    if (parts.length === 0) {
+        alert("Please paste at least one part number.");
+        return;
+    }
+
+    if (!file) {
+        alert("Please upload your Excel file.");
+        return;
+    }
+
+    if (parts.length > 500) {
+        alert("Please enter 500 or fewer part numbers.");
+        return;
+    }
+
+    const button = document.querySelector(".fetch-button");
+    button.disabled = true;
+    button.classList.add("loading");
+    button.innerHTML = '<span class="spinner"></span><span>Fetching...</span>';
+
+    document.getElementById("updated").innerText = "0";
+    document.getElementById("notfound").innerText = "0";
+    document.getElementById("review").innerText = "0";
+
+    const progressPanel = document.getElementById("progress-panel");
+    progressPanel.classList.add("active");
+
+    setProgress(0, parts.length, "Starting fetch...", "Preparing C&C searches");
+
+    const formData = new FormData();
+    formData.append("part_numbers", parts.join("\n"));
+    formData.append("excel", file);
+
+    try {
+        const response = await fetch("/start_fetch", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Something went wrong.");
+        }
+
+        const jobId = data.job_id;
+
+        await pollProgress(jobId);
+
+    } catch (error) {
+        setProgress(0, parts.length, "Error", error.message);
+        alert("Error:\n\n" + error.message);
+    } finally {
+        button.disabled = false;
+        button.classList.remove("loading");
+        button.innerHTML = '<span class="button-icon">↗</span><span>Fetch Descriptions</span>';
+    }
+}
+
+
+async function pollProgress(jobId) {
+    let finished = false;
+
+    while (!finished) {
+        const response = await fetch("/progress/" + encodeURIComponent(jobId), {
+            cache: "no-store"
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || "Unable to read fetch progress.");
+        }
+
+        const total = data.total || 0;
+        const processed = data.processed || 0;
+        const percent = total > 0
+            ? Math.round((processed / total) * 100)
+            : 0;
+
+        let statusText = "Searching C&C...";
+        if (data.status === "saving") statusText = "Saving Excel workbook...";
+        if (data.status === "complete") statusText = "Fetch complete";
+        if (data.status === "error") statusText = "Fetch failed";
+
+        setProgress(
+            percent,
+            total,
+            `${processed} / ${total} processed`,
+            statusText
+        );
+
+        updateResults(data.results || []);
+
+        document.getElementById("updated").innerText = data.updated || 0;
+        document.getElementById("notfound").innerText = data.not_found || 0;
+        document.getElementById("review").innerText = data.review || 0;
+        document.getElementById("total").innerText = total;
+
+        if (data.status === "complete") {
+            window.downloadFile = data.download_id;
+            setProgress(
+                100,
+                total,
+                `${total} / ${total} processed`,
+                "Complete — Excel is ready"
+            );
+
+            finished = true;
+
+            setTimeout(() => {
+                document.getElementById("progress-panel").scrollIntoView({
+                    behavior: "smooth",
+                    block: "center"
+                });
+            }, 100);
+
+            alert(
+                "Finished!\n\n" +
+                (data.updated || 0) +
+                " products were updated."
+            );
+        }
+
+        if (data.status === "error") {
+            throw new Error(data.error || "The fetch job failed.");
+        }
+
+        if (!finished) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+    }
+}
+
+
+function setProgress(percent, total, countText, statusText) {
+    document.getElementById("progress-fill").style.width = percent + "%";
+    document.getElementById("progress-percent").innerText = percent + "%";
+    document.getElementById("progress-count").innerText =
+        countText || `0 / ${total} processed`;
+    document.getElementById("progress-status").innerText =
+        statusText || "Waiting to start";
+
+    const title = document.getElementById("progress-title");
+
+    if (percent >= 100) {
+        title.innerText = "Processing complete";
+    } else if (percent > 0) {
+        title.innerText = "Processing products";
+    } else {
+        title.innerText = "Ready to process";
+    }
+}
+
+
+function updateResults(items) {
+    const results = document.getElementById("results");
+
+    if (!items.length) {
+        results.innerHTML = `
+            <tr>
+                <td colspan="5">
+                    <div class="empty">
+                        <div class="empty-icon">⌕</div>
+                        <strong>Searching for products...</strong>
+                        <span>Results will appear as C&C matches are found.</span>
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    results.innerHTML = "";
+
+    items.forEach(result => {
+        const row = document.createElement("tr");
+
+        let statusHTML = "";
+
+        if (result.status === "Updated") {
+            statusHTML = `
+                <span class="status-badge status-updated">
+                    ✓ Updated
+                </span>
+            `;
+        } else if (result.status === "Not Found") {
+            statusHTML = `
+                <span class="status-badge status-notfound">
+                    ! Not Found
+                </span>
+            `;
+        } else {
+            statusHTML = `
+                <span class="status-badge status-review">
+                    ? Needs Review
+                </span>
+            `;
+        }
+
+        row.innerHTML = `
+            <td>
+                <strong>${escapeHTML(result.part_number)}</strong>
+            </td>
+
+            <td>
+                ${escapeHTML(result.description || "—")}
+            </td>
+
+            <td>
+                ${statusHTML}
+            </td>
+
+            <td>
+                ${
+                    result.website
+                    ?
+                    `<a href="${escapeHTML(result.website)}" target="_blank" rel="noopener noreferrer">
+                        View Product ↗
+                    </a>`
+                    :
+                    "—"
+                }
+            </td>
+        `;
+
+        results.appendChild(row);
+    });
+}
+
+
+/* =========================================
+   CLEAR PART NUMBERS
+========================================= */
+
+function clearPartNumbers() {
+    document.getElementById("parts").value = "";
+    countParts();
+    document.getElementById("parts").focus();
+}
+
+
+/* =========================================
+   PART NUMBER COUNT
+========================================= */
+
+function countParts() {
+
+    const text =
+        document.getElementById(
+            "parts"
+        ).value;
+
+
+    const parts =
+        text
+        .split("\n")
+        .map(x => x.trim())
+        .filter(x => x.length > 0);
+
+
+    document.getElementById(
+        "counter"
+    ).innerText =
+        parts.length +
+        " part numbers";
+
+}
+
+
+/* =========================================
+   EXCEL FILE
+========================================= */
+
+function showFile() {
+
+    const file =
+        document.getElementById(
+            "excel"
+        ).files[0];
+
+
+    if (file) {
+        document.getElementById("file-name").innerText = file.name;
+        document.getElementById("upload-zone").classList.add("selected");
+    }
+
+}
+
+
+/* =========================================
+   DOWNLOAD UPDATED EXCEL
+========================================= */
+
+function downloadExcel() {
+
+    if (!window.downloadFile) {
+
+        alert(
+            "Please run a fetch first."
+        );
+
+        return;
+    }
+
+
+    window.location.href =
+        "/download?file=" +
+        encodeURIComponent(
+            window.downloadFile
+        );
+
+}
+
+
+/* =========================================
+   SECURITY
+========================================= */
+
+function escapeHTML(text) {
+
+    const div =
+        document.createElement(
+            "div"
+        );
+
+    div.textContent =
+        text;
+
+    return div.innerHTML;
+
+}
+
+</script>
+</body>
+</html>
